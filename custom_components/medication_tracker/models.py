@@ -794,3 +794,14 @@ class MedicationEntry:
             0, self.data.current_supply - self.data.pills_per_dose
         )
         return True
+
+    def delete_dose(self, timestamp_iso: str) -> bool:
+        """Delete a dose record by timestamp. Returns True and restores supply if the dose was taken."""
+        for i, record in enumerate(self.dose_history):
+            if record.timestamp.isoformat() == timestamp_iso:
+                was_taken = record.taken
+                self.dose_history.pop(i)
+                if was_taken and self.data.supply_tracking_enabled and self.data.current_supply is not None:
+                    self.data.current_supply += self.data.pills_per_dose
+                return True
+        return False

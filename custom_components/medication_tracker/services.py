@@ -16,6 +16,7 @@ from .const import (
     ATTR_DATETIME,
     ATTR_MEDICATION_ID,
     ATTR_REFILL_AMOUNT,
+    ATTR_TIMESTAMP,
     CONF_CURRENT_SUPPLY,
     CONF_DOSAGE,
     CONF_END_DATE,
@@ -40,6 +41,7 @@ from .const import (
     SERVICE_TAKE_MEDICATION,
     SERVICE_UPDATE_MEDICATION,
     SERVICE_UPDATE_SUPPLY,
+    SERVICE_DELETE_DOSE,
 )
 from .coordinator import MedicationCoordinator
 from .models import MedicationData
@@ -129,6 +131,13 @@ UPDATE_SUPPLY_SCHEMA = vol.Schema(
     {
         vol.Required(ATTR_MEDICATION_ID): cv.string,
         vol.Required(ATTR_CURRENT_SUPPLY): vol.Coerce(float),
+    }
+)
+
+DELETE_DOSE_SCHEMA = vol.Schema(
+    {
+        vol.Required(ATTR_MEDICATION_ID): cv.string,
+        vol.Required(ATTR_TIMESTAMP): cv.string,
     }
 )
 
@@ -386,6 +395,30 @@ async def async_setup_services(hass: HomeAssistant) -> None:
         SERVICE_UPDATE_SUPPLY,
         handle_update_supply,
         schema=UPDATE_SUPPLY_SCHEMA,
+    )
+
+    async def handle_delete_dose(call: ServiceCall) -> None:
+        """Handle delete dose service call."""
+        medication_id = call.data[ATTR_MEDICATION_ID]
+        timestamp_iso = call.data[ATTR_TIMESTAMP]
+
+        coordinator = _get_coordinator_for_medication(hass, medication_id)
+        if coordinator:
+            success = await coordinator.async_delete_dose(medication_id, timestamp_iso)
+            if not success:
+                _LOGGER.error(
+                    "Failed to delete dose for medication %s at %s",
+                    medication_id,
+                    timestamp_iso,
+                )
+        else:
+            _LOGGER.error("Medication %s not found", medication_id)
+
+    hass.services.async_register(
+        DOMAIN,
+        SERVICE_DELETE_DOSE,
+        handle_delete_dose,
+        schema=DELETE_DOSE_SCHEMA,
     )
 
 

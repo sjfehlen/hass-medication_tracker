@@ -836,6 +836,24 @@ class MedicationTrackerPanel extends LitElement {
         font-size: 0.85em;
       }
 
+      .history-delete-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: var(--error-color, #db4437);
+        padding: 2px 4px;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        opacity: 0.6;
+        flex-shrink: 0;
+      }
+
+      .history-delete-btn:hover {
+        opacity: 1;
+        background: rgba(219, 68, 55, 0.1);
+      }
+
       .history-empty {
         padding: 24px;
         text-align: center;
@@ -1316,6 +1334,21 @@ class MedicationTrackerPanel extends LitElement {
     this._showHistoryDialog = false;
     this._historyMedication = null;
     this._backfillDatetime = "";
+  }
+
+  async _deleteDose(medicationId, timestampIso) {
+    if (!confirm("Delete this dose record? If it was taken, the supply will be restored.")) return;
+    try {
+      await this.hass.callService("medication_tracker", "delete_dose", {
+        medication_id: medicationId,
+        timestamp: timestampIso,
+      });
+      await this._loadMedications();
+      const updated = this._medications.find(m => m.id === medicationId);
+      if (updated) this._historyMedication = updated;
+    } catch (error) {
+      console.error("Error deleting dose:", error);
+    }
   }
 
   async _backfillDose() {
@@ -2154,6 +2187,13 @@ class MedicationTrackerPanel extends LitElement {
                           ></ha-icon>
                           <span class="history-date">${this._formatTime(record.timestamp)}</span>
                           <span class="history-status">${record.taken ? 'Taken' : 'Skipped'}</span>
+                          <button
+                            class="history-delete-btn"
+                            @click=${() => this._deleteDose(this._historyMedication.id, record.timestamp)}
+                            title="Delete this record"
+                          >
+                            <ha-icon icon="mdi:delete"></ha-icon>
+                          </button>
                         </div>
                       `)}
                     </div>

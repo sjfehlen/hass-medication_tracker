@@ -280,3 +280,20 @@ update_supply:
           min: 0
           step: 0.5
           mode: box
+
+delete_dose:
+  name: Delete Dose
+  description: Delete a specific dose record from a medication's history. If the dose was taken, the supply will be restored.
+  fields:
+    medication_id:
+      name: Medication ID
+      description: The ID of the medication.
+      required: true
+      selector:
+        text:
+    timestamp:
+      name: Timestamp
+      description: The ISO timestamp of the dose record to delete.
+      required: true
+      selector:
+        text:

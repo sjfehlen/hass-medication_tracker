@@ -349,6 +349,21 @@ class MedicationCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         )
         return True
 
+    async def async_delete_dose(self, medication_id: str, timestamp_iso: str) -> bool:
+        """Delete a dose record by timestamp, restoring supply if it was taken."""
+        if medication_id not in self._medications:
+            return False
+
+        medication = self._medications[medication_id]
+        success = medication.delete_dose(timestamp_iso)
+
+        if success:
+            await self.async_save_medications()
+            await self.async_request_refresh()
+            _LOGGER.info("Deleted dose record for medication %s at %s", medication_id, timestamp_iso)
+
+        return success
+
     def _fire_low_supply_event(self, medication: MedicationEntry) -> None:
         """Fire a Home Assistant event when medication supply becomes low."""
         days_remaining = medication.days_of_supply_remaining

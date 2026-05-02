@@ -38,10 +38,12 @@ SERVICE_REMOVE_MEDICATION: Final = "remove_medication"
 SERVICE_UPDATE_MEDICATION: Final = "update_medication"
 SERVICE_REFILL_MEDICATION: Final = "refill_medication"
 SERVICE_UPDATE_SUPPLY: Final = "update_supply"
+SERVICE_DELETE_DOSE: Final = "delete_dose"
 
 # Attributes
 ATTR_MEDICATION_ID: Final = "medication_id"
 ATTR_DATETIME: Final = "datetime"
+ATTR_TIMESTAMP: Final = "timestamp"
 ATTR_DEVICE_ID: Final = "device_id"
 ATTR_TAKEN_AT: Final = "taken_at"
 ATTR_SKIPPED_AT: Final = "skipped_at"
